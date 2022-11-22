@@ -43,13 +43,10 @@ class respondingServer:
         while True:
             conn, addr = tcp_socket.accept()
 
-
             # Start first timer
             first_time = self._get_time_from_timezone()
 
-
             #print(f"{self.application_name} Sending: \nAcknowledgement message to address: {addr}. {self._get_time_from_timezone()}")
-
 
             # Try to find and read file
             try:
@@ -60,20 +57,11 @@ class respondingServer:
             except:
                 print(f"{self.application_name} The file does not exist. {self._get_time_from_timezone()}")
             
-
             # Timer after reading
             after_reading_time = self._get_time_from_timezone()
 
-
             # Data management
-
-
-
-
-            
             after_data_operations_time = self._get_time_from_timezone()
-            
-
 
             # Package timestamps
             timestamps = dict()
@@ -96,8 +84,7 @@ class respondingServer:
         return time
 
 
-
 tcp_port = 5500
-host_ip = '13.51.175.214'
+host_ip = ''
 send_file_name = 'tree-picture.jpg'
 server = respondingServer(host_ip, tcp_port, send_file_name)
