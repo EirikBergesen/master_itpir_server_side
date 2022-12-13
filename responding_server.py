@@ -17,12 +17,11 @@ class respondingServer:
         self.tcp_port = tcp_port
         self.tcp_addr = (host_ip, tcp_port)
         self._BUFFER_SIZE = 1024
-        self.tcp_transfer_endnote = 'FIN END'
+        self.tcp_transfer_endnote = 'FIN'
 
         # Naming variables
         self.application_name = application_name
         self.list_of_file_names = list_of_file_names
-        self.transfer_end_note = "FIN END"
 
         # Timezone variable
         self.timezone = 'Europe/Oslo'
@@ -68,7 +67,7 @@ class respondingServer:
                 print(data, 'is not in ', self.list_of_file_names)
             
             if packet:
-                msg = packet + self.transfer_end_note
+                msg = packet + self.tcp_transfer_endnote
                 conn.send(msg.encode())
             else:
                 print('Could not build packet based on: ', str(data))
@@ -101,9 +100,15 @@ class respondingServer:
         timestamps['request_received'] = datetime.strftime(first_time, '%Y-%m-%d %H:%M:%S.%f%z')
         timestamps['after_reading_data'] = datetime.strftime(after_reading_time, '%Y-%m-%d %H:%M:%S.%f%z')
         timestamps['after_data_operations'] = datetime.strftime(after_data_operations_time, '%Y-%m-%d %H:%M:%S.%f%z')
+        
+        # Meta-data
+        metadata = []
+        metadata.append(self.application_name)
 
         # Packaging
-        packet = str([data, str(timestamps)])
+        print('This is application name: ', self.application_name)
+        packet = str([data, str(timestamps), str(metadata)])
+        print(packet)
         return packet
 
 
