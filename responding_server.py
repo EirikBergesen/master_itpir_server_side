@@ -96,18 +96,15 @@ class respondingServer:
         after_data_operations_time = self._get_time_from_timezone()
 
         # Package timestamps
-        timestamps = dict()
-        timestamps['request_received'] = datetime.strftime(first_time, '%Y-%m-%d %H:%M:%S.%f%z')
-        timestamps['after_reading_data'] = datetime.strftime(after_reading_time, '%Y-%m-%d %H:%M:%S.%f%z')
-        timestamps['after_data_operations'] = datetime.strftime(after_data_operations_time, '%Y-%m-%d %H:%M:%S.%f%z')
-        
-        # Meta-data
-        metadata = []
-        metadata.append(self.application_name)
+        metadata = dict()
+        metadata['name_of_server'] = self.application_name
+        metadata['request_received'] = datetime.strftime(first_time, '%Y-%m-%d %H:%M:%S.%f%z')
+        metadata['after_reading_data'] = datetime.strftime(after_reading_time, '%Y-%m-%d %H:%M:%S.%f%z')
+        metadata['after_data_operations'] = datetime.strftime(after_data_operations_time, '%Y-%m-%d %H:%M:%S.%f%z')
 
         # Packaging
         print('This is application name: ', self.application_name)
-        packet = str([data, str(timestamps), str(metadata)])
+        packet = str([data, str(metadata)])
         print(packet)
         return packet
 
