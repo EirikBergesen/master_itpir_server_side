@@ -43,6 +43,7 @@ class respondingServer:
         
         while True:
             conn, addr = tcp_socket.accept()
+            print(f"Connection accepted from: {addr}")
             data = self._recvall(conn)
             # Start first timer
             first_time = self._get_time_from_timezone()
@@ -52,6 +53,7 @@ class respondingServer:
                     evaluated_data = eval(data)
                 except:
                     print('The data received could not be interpreted')
+                    return 
                 if type(evaluated_data) == list:
                     for entry in evaluated_data:
                         if not entry in self.list_of_file_names:
@@ -103,9 +105,7 @@ class respondingServer:
         metadata['after_data_operations'] = datetime.strftime(after_data_operations_time, '%Y-%m-%d %H:%M:%S.%f%z')
 
         # Packaging
-        print('This is application name: ', self.application_name)
         packet = str([data, str(metadata)])
-        print(packet)
         return packet
 
 
@@ -127,8 +127,7 @@ class respondingServer:
             msg_array.extend(msg_part)
 
             # Breaking at endnote
-            # TODO: Somewaht unsure if this is secure, or maybe slow
-            if str(msg_array.decode()).endswith(self.tcp_transfer_endnote):
+            if str(msg_array.decode()[-len(self.tcp_transfer_endnote):]).endswith(self.tcp_transfer_endnote):
                 break
         
         # Remove endnote
