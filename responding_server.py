@@ -9,7 +9,7 @@ class respondingServer:
     '''Server class
     Runs 'forever/until broken', and responds to requests by sending a file.
     '''
-    def __init__(self, host_ip, tcp_port, list_of_file_names, application_name:str = '[Sending Server]') -> None:
+    def __init__(self, host_ip, list_of_file_names, tcp_port = 5500, modes = 0) -> None:
         '''Takes params: (host ip, tcp port, filename to send from same directory)
         '''
         # Connection variables
@@ -20,14 +20,19 @@ class respondingServer:
         self.tcp_transfer_endnote = 'FIN'
 
         # Naming variables
-        self.application_name = application_name
+        self.application_name = f"[Server On Host: {self.host_ip}, OnPort: {tcp_port}]"
         self.list_of_file_names = list_of_file_names
 
         # Timezone variable
         self.timezone = 'Europe/Oslo'
 
         print(f"{self.application_name} starts on host: {self.host_ip}, tcp port {self.tcp_port}. {self._get_time_from_timezone()}")
-        threading.Thread(target=self._tcp_request_handler).start()
+        
+        if modes == '1':
+            print('Starting Chors')
+            threading.Thread(target=self._tcp_request_handler_chors).start()
+        else:
+            threading.Thread(target=self._tcp_request_handler).start()
 
     
     def _tcp_request_handler(self):
@@ -73,6 +78,43 @@ class respondingServer:
                 conn.send(msg.encode())
             else:
                 print('Could not build packet based on: ', str(data))
+
+
+    def _tcp_request_handler_chors(self):
+        '''Accept TCP connection and send data.
+        Opens a socket create_server.
+        Tries to find and read file from/in same directory as this script.
+        Packages file, message and an endnote.
+        Sends all.
+        '''
+        tcp_socket = create_server(self.tcp_addr)
+        tcp_socket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+        tcp_socket.listen()
+        
+        while True:
+            conn, addr = tcp_socket.accept()
+            print(f"Connection accepted from: {addr}")
+            data = self._recvall(conn)
+            # Start first timer
+            first_time = self._get_time_from_timezone()
+            data = eval(data)
+            if type(data) == list and type(data[0]) == int:
+                wanting_list = []
+                for iter, obj in enumerate(data):
+                    if obj:
+                        wanting_list.append(list_of_picture_names[iter])
+                print('Wanted list', wanting_list)
+                packet = self._make_data_package(wanting_list, first_time=first_time)
+                                    
+            else:
+                print(data, 'Can not be used. Something is wrong, not a list of ints')
+            
+            if packet:
+                msg = packet + self.tcp_transfer_endnote
+                conn.send(msg.encode())
+            else:
+                print('Could not build packet based on: ', str(data))
+
 
 
     def _make_data_package(self, sending_filenames, first_time):
@@ -135,8 +177,6 @@ class respondingServer:
         return msg
 
 
-tcp_port = 5500
-host_ip = ''
 
 list_of_picture_names = [
     'tree-picture_320240_00.png',
@@ -150,10 +190,19 @@ list_of_picture_names = [
     'tree-picture_320240_08.png',
     'tree-picture_320240_09.png'
 ]
+default_tcp_port = '5500'
+default_host_ip = ''
+default_modes = '1'
+
+print('Default port: 5500, No modes and HostIp is empty.')
+tcp_port = input('What port should this server get: ')
+modes = input("What mode should be used: default is chors")
 
 
-application_name = input('What should this server be called in the dataset: ')
-if application_name:
-    server = respondingServer(host_ip, tcp_port, list_of_picture_names, application_name)
-else:
-    server = respondingServer(host_ip, tcp_port, list_of_picture_names)
+
+if tcp_port:
+    default_tcp_port = tcp_port
+if modes:
+    default_modes = modes
+
+server = respondingServer(default_host_ip, list_of_picture_names, int(default_tcp_port), default_modes)
