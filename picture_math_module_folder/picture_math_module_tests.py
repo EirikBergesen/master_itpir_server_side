@@ -87,6 +87,20 @@ def subtracting_images_in_list_test():
     print('Subtracting images in list test: Passed')
 
 
+def several_several_add_and_sub_test():
+    print('Basic chors scheme test: Start')
+    s_0 = add_several_images(load_several_images_from_path([image_database_list_names_ordered_relativepath[1],
+                                                             image_database_list_names_ordered_relativepath[5],
+                                                             image_database_list_names_ordered_relativepath[6],
+                                                             image_database_list_names_ordered_relativepath[9]]))
+    s_1 = add_several_images(load_several_images_from_path([image_database_list_names_ordered_relativepath[5],
+                                                             image_database_list_names_ordered_relativepath[6],
+                                                             image_database_list_names_ordered_relativepath[9]]))
+    fin = subtract_two_images(s_0, s_1)
+    assert(picture_compare(fin, 1))
+    print('Basic chors scheme test: Passed')
+
+
 def run_picture_math_module_test():
     picture_compare_test()
     add_picture_function_test()
@@ -95,6 +109,7 @@ def run_picture_math_module_test():
     more_adding_and_subtracting_test()
     adding_images_in_list_test()
     subtracting_images_in_list_test()
+    several_several_add_and_sub_test()
 
 
 if __name__ == "__main__":

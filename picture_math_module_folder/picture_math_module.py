@@ -128,6 +128,13 @@ def picture_compare(img_00:Image, picture_number_in_database:int):
     img_01 = Image.open(image_1)
     return all_pixels_in_images_compare(img_00, img_01)
 
+    
+def image_is_in_picture_list(img:Image):
+    for i in range(len(image_database_list_names_ordered_relativepath)):
+        if picture_compare(img, i):
+            return True
+    return False
+
 
 def load_image_from_path(path:str):
     return Image.open(path)
@@ -138,3 +145,13 @@ def load_several_images_from_path(path_list:list):
     for picture in path_list:
         image_list.append(load_image_from_path(picture))
     return image_list
+
+
+def save_image_as(img:Image, path:str):
+    """Stores an image as compression less png
+
+    Args:
+        img (Image): Image to be saved/stored to file
+        path (str): Path for that file to be stored to
+    """    
+    img.save(path, bitmap_format='png', optimize=False,compress_level=0, bits=(256*3))

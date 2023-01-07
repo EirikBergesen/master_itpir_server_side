@@ -3,6 +3,7 @@ from datetime import datetime
 import threading
 from os import getcwd
 from pytz import timezone as pytimezone
+from picture_math_module_folder.picture_math_module import *
 
 
 class respondingServer:
@@ -98,13 +99,14 @@ class respondingServer:
             # Start first timer
             first_time = self._get_time_from_timezone()
             data = eval(data)
+            print('Data request received: ', data)
             if type(data) == list and type(data[0]) == int:
                 wanting_list = []
                 for iter, obj in enumerate(data):
                     if obj:
                         wanting_list.append(list_of_picture_names[iter])
-                print('Wanted list', wanting_list)
-                packet = self._make_data_package(wanting_list, first_time=first_time)
+                print('Wanted list: ', wanting_list)
+                packet = self._make_data_package_chors(wanting_list, first_time=first_time)
                                     
             else:
                 print(data, 'Can not be used. Something is wrong, not a list of ints')
@@ -115,6 +117,52 @@ class respondingServer:
             else:
                 print('Could not build packet based on: ', str(data))
 
+
+    def _make_data_package_chors(self, sending_filenames, first_time):
+        # Timer after reading
+        after_reading_time = self._get_time_from_timezone()
+        
+        # Try to find and read file
+        if type(sending_filenames) == str: 
+            sending_filenames = [sending_filenames]
+
+        paths_for_pictures = []
+        for iter, sending_filename in enumerate(sending_filenames):
+            try:
+                path = getcwd()
+                full_path = f"{path}/{sending_filename}"
+                paths_for_pictures.append(full_path)
+            except:
+                print(f"{self.application_name} The file does not exist. {self._get_time_from_timezone()}")
+                return
+        
+        
+
+        # Data management
+        
+        images_from_path = load_several_images_from_path(paths_for_pictures)
+        merged_picture = add_several_images(images_from_path)
+        returned_image_name = f"compounded_image{self.tcp_port}.png"
+        save_image_as(merged_picture, returned_image_name)
+        
+        after_data_operations_time = self._get_time_from_timezone()
+        
+        data = []
+        path = getcwd()
+        full_path = f"{path}/{returned_image_name}"
+        with open(full_path, 'rb') as data_file:
+            data.append(data_file.read())
+
+        # Package timestamps
+        metadata = dict()
+        metadata['name_of_server'] = self.application_name
+        metadata['request_received'] = datetime.strftime(first_time, '%Y-%m-%d %H:%M:%S.%f%z')
+        metadata['after_reading_data'] = datetime.strftime(after_reading_time, '%Y-%m-%d %H:%M:%S.%f%z')
+        metadata['after_data_operations'] = datetime.strftime(after_data_operations_time, '%Y-%m-%d %H:%M:%S.%f%z')
+
+        # Packaging
+        packet = str([data, str(metadata)])
+        return packet
 
 
     def _make_data_package(self, sending_filenames, first_time):
